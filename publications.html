@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Publications · Meital Bojan</title>
+  <meta name="description" content="Publications by Meital Bojan, each with a plain-language blog post explaining the paper.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="brand-name">Meital Bojan</span></a>
+    <nav class="nav" aria-label="Main">
+      <a href="index.html">About</a>
+      <a href="publications.html" aria-current="page">Publications</a>
+      <a href="cv.html">CV</a>
+      <button class="theme-toggle" type="button" aria-label="Toggle dark mode">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="page-head">
+    <div class="wrap">
+      <h1>Publications</h1>
+      <p style="font-size:.92rem;color:var(--muted);margin-top:8px">* Equal contribution.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="filter-bar" role="group" aria-label="Filter publications">
+        <button type="button" data-filter="all" aria-pressed="true">All</button>
+        <button type="button" data-filter="generative" aria-pressed="false">Generative models</button>
+        <button type="button" data-filter="proteins" aria-pressed="false">Proteins</button>
+        <button type="button" data-filter="representations" aria-pressed="false">Representations</button>
+        <button type="button" data-filter="physics" aria-pressed="false">Physics</button>
+      </div>
+
+      <div class="pub-grid">
+
+        <!-- Symmetry -->
+        <a class="pub-card reveal" href="posts/symmetry-aware-wave-functions.html" data-tags="physics">
+          <div class="pub-thumb art" aria-hidden="true">
+            <svg viewBox="0 0 320 190" fill="none">
+              <path d="M28 160H300" stroke="#b9b39b" stroke-width="1.5"/>
+              <path d="M28 160V22" stroke="#b9b39b" stroke-width="1.5"/>
+              <!-- envelope -->
+              <path d="M28 160C48 110 66 60 92 52C122 44 150 80 190 112C226 138 262 152 300 157" stroke="#b0742f" stroke-width="2.5" stroke-dasharray="6 6"/>
+              <!-- residual -->
+              <path d="M28 128C70 128 96 122 128 104C156 88 184 96 214 116C246 134 276 132 300 130" stroke="#95a55a" stroke-width="2.5"/>
+              <!-- product -->
+              <path d="M28 160C46 118 62 66 86 46C108 30 132 50 160 88C188 122 220 146 258 154C276 157 290 158 300 159" stroke="#3e4a1c" stroke-width="3.2"/>
+              <text x="296" y="30" text-anchor="end" font-family="Georgia, serif" font-style="italic" font-size="15" fill="#3e4a1c">ψ = envelope × residual</text>
+            </svg>
+          </div>
+          <div class="pub-body">
+            <div class="pub-meta"><span class="chip">WiML @ NeurIPS 2026</span><span class="chip quiet">Under review (ICLR 2027)</span></div>
+            <h3>Symmetry-aware residual learning of few-body molecular wave functions</h3>
+            <p class="pub-teaser">When much of the answer is already known, it can be built into the model, leaving the neural network to learn only what remains.</p>
+            <p class="pub-authors"><b>Meital Bojan</b>*, Mikhail Maslov*, Jing-Lun Li, Alex M. Bronstein, Mikhail Lemeshko</p>
+            <span class="pub-read">Read the post <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+          </div>
+        </a>
+
+        <!-- Nature Biotech -->
+        <a class="pub-card reveal" href="posts/experiment-guided-alphafold3.html" data-tags="proteins generative">
+          <div class="pub-thumb"><img src="assets/img/nature/fig4.webp" alt="Ensembles from unguided and NOE-guided AlphaFold3 overlaid on NMR structures"></div>
+          <div class="pub-body">
+            <div class="pub-meta"><span class="chip">Nature Biotechnology</span><span class="chip quiet">2026</span></div>
+            <h3>Experiment-guided AlphaFold3 resolves measurement-consistent protein ensembles</h3>
+            <p class="pub-teaser">
+              AlphaFold3 guided by NMR, X-ray and cryo-EM data, alone or combined, into small ensembles that explain
+              the measurements, often better than the structures deposited in the PDB.
+            </p>
+            <p class="pub-followup">Follow-up to <em>Inverse problems with experiment-guided AlphaFold</em></p>
+            <p class="pub-authors">Advaith Maddipatla, Nadav Bojan Sellam, <b>Meital Bojan</b>, Volodymyr Masalitin, Sanketh Vedula, Paul Schanda, Ailie Marx, Alex M. Bronstein</p>
+            <span class="pub-read">Read the post <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+          </div>
+        </a>
+
+        <!-- ICLR -->
+        <a class="pub-card reveal" href="posts/mlff-protein-environments.html" data-tags="proteins representations">
+          <div class="pub-thumb"><img src="assets/img/iclr/thumb-home.webp" alt="UMAP of MACE features colored by secondary structure and by amino acid identity" loading="lazy"></div>
+          <div class="pub-body">
+            <div class="pub-meta"><span class="chip">ICLR 2026</span><span class="chip quiet">GenBio @ ICML 2026</span></div>
+            <h3>Representing local protein environments with machine learning force fields</h3>
+            <p class="pub-teaser">A machine learning force field trained only on small molecules learns the building blocks of protein chemistry, and we can build on it as it is.</p>
+            <p class="pub-authors"><b>Meital Bojan</b>*, Sanketh Vedula*, Advaith Maddipatla, Nadav Bojan Sellam, Anar Rzayev, Federico Napoli, Paul Schanda, Alex M. Bronstein</p>
+            <span class="pub-read">Read the post <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+          </div>
+        </a>
+
+        <!-- Seek -->
+        <a class="pub-card reveal" href="posts/seek-and-you-shall-fold.html" data-tags="proteins generative">
+          <div class="pub-thumb"><img src="assets/img/seek/method.webp" alt="Generator, scorer and selector loop of the genetic algorithm" loading="lazy"></div>
+          <div class="pub-body">
+            <div class="pub-meta"><span class="chip">MLSB @ EurIPS 2025</span></div>
+            <h3>Seek and You Shall Fold</h3>
+            <p class="pub-teaser">Guiding a protein generator with any black-box score, no gradients needed, using a genetic algorithm in latent space.</p>
+            <p class="pub-followup">Follow-up to <em>Inverse problems with experiment-guided AlphaFold</em></p>
+            <p class="pub-authors">Nadav Bojan Sellam*, <b>Meital Bojan</b>*, Paul Schanda, Alex M. Bronstein</p>
+            <span class="pub-read">Read the post <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+          </div>
+        </a>
+
+        <!-- ICML -->
+        <a class="pub-card reveal" href="posts/experiment-guided-alphafold.html" data-tags="proteins generative">
+          <div class="pub-thumb"><img src="assets/img/icml/4ole-altlocs.webp" alt="Density-guided AlphaFold recovering two alternate conformations in 4OLE" loading="lazy"></div>
+          <div class="pub-body">
+            <div class="pub-meta"><span class="chip">ICML 2025</span><span class="chip quiet">GEM @ ICLR 2025 spotlight</span></div>
+            <h3>Inverse problems with experiment-guided AlphaFold</h3>
+            <p class="pub-teaser">Experiments measure averages over many molecules, so we guide a whole ensemble at once instead of one structure at a time.</p>
+            <p class="pub-authors">Advaith Maddipatla*, Nadav Bojan Sellam*, <b>Meital Bojan</b>*, Sanketh Vedula, Paul Schanda, Ailie Marx, Alex M. Bronstein</p>
+            <span class="pub-read">Read the post <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+          </div>
+        </a>
+
+        <!-- Flows -->
+        <a class="pub-card reveal" href="posts/correcting-flows.html" data-tags="generative">
+          <div class="pub-thumb"><img src="assets/img/flows/marginals.webp" alt="Forward and backward marginal trajectories in a vector field" loading="lazy"></div>
+          <div class="pub-body">
+            <div class="pub-meta"><span class="chip">Preprint</span><span class="chip quiet">2024</span><span class="chip quiet">MSc thesis</span></div>
+            <h3>Correcting flows with marginal matching</h3>
+            <p class="pub-teaser">Run an imperfect flow backwards from the data and you get a path the same model follows exactly to the data. Then correct toward it.</p>
+            <p class="pub-authors"><b>Meital Bojan</b>, Nadav Bojan Sellam, Ev Zisselman, Aviv Tamar</p>
+            <span class="pub-read">Read the post <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+          </div>
+        </a>
+
+
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="assets/js/site.js"></script>
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Seek and You Shall Fold · Meital Bojan</title>
+  <meta name="description" content="Most predictors of experimental data have no gradients. We guide a protein generator with any black-box score using a genetic algorithm in latent space, with local perturbations and an annealing schedule.">
+  <meta property="og:title" content="Seek and You Shall Fold">
+  <meta property="og:description" content="Guiding a protein generator with any black-box score, no gradients needed.">
+  <meta property="og:image" content="../assets/img/seek/method.webp">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono&display=swap">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="../index.html"><span class="brand-name">Meital Bojan</span></a>
+    <nav class="nav" aria-label="Main">
+      <a href="../index.html">About</a>
+      <a href="../publications.html" aria-current="page">Publications</a>
+      <a href="../cv.html">CV</a>
+      <button class="theme-toggle" type="button" aria-label="Toggle dark mode">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+<article>
+  <header class="post-head">
+    <div class="wrap">
+      <a class="back-link" href="../publications.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>All publications</a>
+      <div class="pub-meta"><span class="chip">MLSB @ EurIPS 2025</span></div>
+      <h1>Seek and You Shall Fold</h1>
+      <p class="post-sub">How can a generative model be guided by a reward that has no gradients? Instead of following gradients, we let a population of samples evolve.</p>
+      <p class="post-authors">Nadav Bojan Sellam*, <b>Meital Bojan</b>*, Paul Schanda, Alex M. Bronstein &middot; ISTA &amp; Technion &middot; <span style="font-size:.85em">*equal contribution</span></p>
+      <div class="post-links">
+        <a class="btn" href="https://arxiv.org/abs/2511.13244" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>arXiv</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="post-body">
+    <div class="tldr">
+      <p class="label">In short</p>
+      <p>
+        Guiding a diffusion model usually needs a differentiable reward, but many widely used predictors of experimental data,
+        such as random forests and lookup tables, have no gradients. We instead run an evolutionary search over the latent
+        noise of a pretrained protein generator (BioEmu). With nuclear magnetic resonance (NMR) distance restraints as the
+        reward, it recovers folds that AlphaFold3 and BioEmu get wrong. With a chemical-shift predictor, the score improves
+        but the structures don&rsquo;t, a clear case of optimizing a proxy.
+      </p>
+      <p class="new"><b>What&rsquo;s new.</b> Guidance without gradients. Any black-box score can steer a protein generator, because the search perturbs structures through the generator&rsquo;s own latent space and they stay close to physically plausible structures. As far as we know, this is the first time a chemical-shift predictor was used directly to guide a structure generator.</p>
+    </div>
+
+    <h2>The differentiability barrier</h2>
+    <p>
+      Experiments give us measurements of a protein, but the hard part is going backwards, finding structures that
+      explain them.
+    </p>
+    <p>
+      In <a href="experiment-guided-alphafold.html">our earlier work</a> we did this by guiding AlphaFold3 with the gradient of
+      the data likelihood. This works well when a differentiable model of the experiment is available, which is often not the
+      case. Chemical shifts, the most widely measured and information-rich NMR signal, reflect each atom&rsquo;s local
+      environment and are a key example.
+      Widely used chemical shift predictors, like UCBShift and SHIFTX2, are built from random forests, sequence
+      alignment and lookup tables. They are mature and widely trusted, and they have no gradients.
+    </p>
+    <p>Even when gradients exist, gradient guidance has several well-known limitations:</p>
+    <ul>
+      <li>a differentiable model is needed for every single observable,</li>
+      <li>gradients are often noisy or ill-conditioned, so convergence is unstable,</li>
+      <li>guidance strength has to be tuned under a fixed diffusion schedule, and</li>
+      <li>it's easy to overfit to noise and end up with broken structures that need to be discarded or relaxed.</li>
+    </ul>
+
+    <h2>A genetic algorithm that respects proteins</h2>
+    <p>
+      The idea is simple. Keep a population of candidate structures, score them with any black-box function, keep the
+      good ones, perturb them, and repeat. The hard part is the perturbation. A protein lives in a very delicate space, and
+      changing its coordinates at random produces something that isn't a protein anymore. So we perturb it
+      <em>through the generator</em>.
+    </p>
+
+    <figure class="fig">
+      <div class="fig-plate narrow"><img class="zoomable" loading="lazy" decoding="async" src="../assets/img/seek/method.webp" alt="Loop of generator, scorer and selector: perturbed latents are decoded by the generator, scored with experimental metrics, and the selector keeps a population"></div>
+      <figcaption><b>The loop.</b> Latents are perturbed and decoded into structures by BioEmu, scored against the experimental data, and the best are kept for the next generation.</figcaption>
+    </figure>
+
+    <p>Three choices make it work for proteins:</p>
+    <ul class="keypoints">
+      <li><span class="n">1</span><span><strong>Single-amino-acid perturbations.</strong> We run the generator <em>backwards</em> from a structure to an intermediate noise level <span class="math">t</span> twice, once with a deterministic ODE and once with a stochastic SDE. We then pick <em>one amino acid</em> at random, swap its ODE latent for its SDE latent, and decode forward again. The result is a new structure that's still physically plausible, with the change concentrated around that amino acid.</span></li>
+      <li><span class="n">2</span><span><strong>No crossover.</strong> Classic genetic algorithms mix two parents. For proteins that creates destabilizing global jumps, so we turned it off.</span></li>
+      <li><span class="n">3</span><span><strong>An annealing schedule.</strong> The noise level <span class="math">t</span> decides how big the change is. Early on, <span class="math">t</span> is high, so changes are large and exploratory. Later, <span class="math">t</span> is lowered every generation, so changes get smaller for fine refinement. It's the same idea as simulated annealing in molecular dynamics, where the system is cooled down slowly.</span></li>
+    </ul>
+    <p>
+      Each pass has its own job. The ODE is deterministic, so its backward and forward passes undo each other: on its
+      own, the round trip gives back the same structure. That keeps every amino acid we didn't pick exactly where it was. The
+      SDE injects fresh random noise on the way back, so its latent is a new, random one that is still in distribution for
+      noise level <span class="math">t</span>. Swapping in the SDE latent for a single amino acid gives us a random change
+      in that amino acid that the generator can still decode into a realistic protein.
+    </p>
+
+    <h2>Why annealing matters</h2>
+    <p>
+      The schedule was the piece we found the most important. With a fixed noise level, the search plateaus. The demo below is a toy
+      version. The "protein" is a little chain whose shape comes from one latent number per amino acid (our stand-in
+      for a generator), and the score is a non-differentiable, NMR-style count of violated distance restraints. We start from
+      a "prior prediction" whose tail is misfolded, just like we initialize from AlphaFold3 in the paper.
+    </p>
+
+    <div class="demo wide" id="ga-demo">
+      <div class="demo-head"><span class="tag">Demo</span><h4>Evolving a misfolded chain with a black-box score</h4></div>
+      <div class="demo-body">
+        <div class="controls" style="margin-top:0;margin-bottom:14px">
+          <div class="seg" role="group" aria-label="Perturbation schedule">
+            <button type="button" data-sched="anneal" aria-pressed="true">Annealed t</button>
+            <button type="button" data-sched="big" aria-pressed="false">Fixed, large t</button>
+            <button type="button" data-sched="small" aria-pressed="false">Fixed, small t</button>
+          </div>
+          <button class="btn" type="button" id="ga-run" style="padding:6px 14px">↻ New random seed</button>
+        </div>
+        <div class="demo-panels two">
+          <div><canvas id="ga-chain" aria-label="Best chain so far with violated restraints in red"></canvas></div>
+          <div><canvas id="ga-curve" aria-label="Best score per generation for each schedule"></canvas></div>
+        </div>
+        <div class="readouts">
+          <div class="readout"><small>Generation</small><b id="ga-gen">0</b></div>
+          <div class="readout warn"><small>Violated restraints</small><b id="ga-viol">–</b></div>
+          <div class="readout good"><small>Violation score (best)</small><b id="ga-score">–</b></div>
+        </div>
+        <div class="legend">
+          <span><i class="line" style="background:var(--olive-deep)"></i>best structure</span>
+          <span><i class="line" style="background:var(--muted);opacity:.35"></i>hidden true fold (not seen by the search)</span>
+          <span><i class="line" style="background:var(--rust)"></i>violated restraint</span>
+          <span><i class="dash" style="color:var(--olive)"></i>satisfied restraint</span>
+        </div>
+        <p class="demo-foot">
+          Try all three schedules. Their curves stay on the plot for comparison. A large fixed step keeps exploring but
+          can't refine. A small fixed step refines, but it can't get the tail out of the wrong fold. Annealing does the big moves first and the small
+          ones later. The score is fraction violated × mean violation, the same form as in the paper, with clashes counted as
+          violations. It has no useful gradient, and the search never needs one.
+        </p>
+      </div>
+    </div>
+
+    <h2>Results</h2>
+    <h3>A warm-up with pairwise distances</h3>
+    <p>
+      We first tested a clean case. Protein 4OLE has a segment (residues 60&ndash;68) that appears in two conformations, a
+      helix (A) and a strand (B). We took short C&alpha;&ndash;C&alpha; distances from conformation A as restraints, started
+      from B, and let the search run. BioEmu on its own only produces B-like structures, and with guidance it recovered the
+      helix.
+    </p>
+
+    <figure class="fig">
+      <div class="fig-plate narrow"><img class="zoomable" loading="lazy" decoding="async" src="../assets/img/seek/4ole-pairwise.webp" alt="4OLE residues 60-68: target conformation A, unguided BioEmu, and guided BioEmu recovering the helix"></div>
+      <figcaption><b>Guiding 4OLE from strand to helix.</b> Without guidance BioEmu produces structures like conformation B. Guided with distances from conformation A, it recovers the helical state.</figcaption>
+    </figure>
+
+    <h3>Recovering the right fold with NOE restraints</h3>
+    <p>
+      Next we used real NMR restraints, nuclear Overhauser effects (NOEs), which act as noisy pairwise distances between atoms. The reward was a non-differentiable violation score, the fraction of violated restraints
+      times their average violation. That way it penalizes both widespread small errors and a few severe ones. For the
+      peptides 1DEC and 2LI3, AlphaFold3's predictions contained misfolded regions and unguided BioEmu didn't match the
+      experiment either. Guided BioEmu reduced the violations and recovered the experimental folds.
+    </p>
+
+    <figure class="fig wide">
+      <div class="fig-plate"><img class="zoomable" loading="lazy" decoding="async" src="../assets/img/seek/noe-structures.webp" alt="1DEC and 2LI3: AlphaFold3 prior, unguided BioEmu ensemble, guided BioEmu, each overlaid on the reference structure in gray"></div>
+      <figcaption><b>NOE-guided structures.</b> Reference PDB structures in gray. AlphaFold3 (left, blue) has misfolded regions, unguided BioEmu (middle, pink) is all over the place, and guided BioEmu (right, green) lands on the experimental fold.</figcaption>
+    </figure>
+
+    <figure class="fig">
+      <div class="fig-plate"><img class="zoomable" loading="lazy" decoding="async" src="../assets/img/seek/noe-curve-2li3.webp" alt="Violation metric over generations for 2LI3, guided vs unguided, with PDB and AlphaFold3 baselines"></div>
+      <figcaption><b>2LI3 over the course of the search.</b> The score is shown as negative violation, where higher is better. Starting from AlphaFold3 (green dotted, bottom), the guided best (blue) improves quickly and ends slightly above the deposited PDB structure (orange dotted). Unguided sampling (purple) never improves.</figcaption>
+    </figure>
+
+    <h3>Chemical shifts, the hard case</h3>
+    <p>
+      Finally, the goal we started with. We used UCBShift as the black-box predictor and scored structures by how well their
+      predicted C&alpha; shifts matched, on synthetic shifts for 1DEC and on real experimental shifts for 1DFU.
+    </p>
+
+    <figure class="fig">
+      <div class="fig-plate"><img class="zoomable" loading="lazy" decoding="async" src="../assets/img/seek/cs-curve-1dfu.webp" alt="Chemical shift mean absolute error over generations for 1DFU with experimental shifts"></div>
+      <figcaption><b>Guiding with experimental chemical shifts (1DFU).</b> The shift error of the best structure keeps going down. It takes many more generations than distance restraints, and it starts to plateau later on.</figcaption>
+    </figure>
+
+    <p>
+      The score kept improving. But the structures did <em>not</em> converge to the experimental ensemble. This is a central
+      result of the paper. <strong>Agreeing with a chemical shift predictor doesn't mean agreeing with the
+      real structure</strong>. In ML terms, the search found adversarial examples for the reward model. It is consistent with what we saw in <a href="mlff-protein-environments.html">our force-field paper</a>,
+      where UCBShift's predictions turned out to be only loosely tied to the local physics. So the bottleneck isn't the search anymore, it's the
+      predictor. Physically grounded predictors, like the <a href="mlff-protein-environments.html">one based on a machine learning force field (MLFF)</a> from
+      our force-field paper, could make better rewards.
+    </p>
+
+    <div class="note">
+      <span class="label">Limitations</span>
+      <p>
+        How well the data guided the search varied a lot. Pairwise distances were a proof of concept, NOEs gave robust recovery of the
+        experimental folds, and chemical shifts improved the score without giving accurate structures. There are limits on
+        both sides. BioEmu constrains which conformations we can reach at all, and current chemical shift predictors aren't
+        physically grounded enough to steer toward the right answer.
+      </p>
+    </div>
+
+    <div class="post-end">
+      <h3 style="font-family:var(--sans);font-size:.95rem;margin:0">Cite</h3>
+      <pre class="cite-box">@inproceedings{bojansellam2025seek,
+  title     = {Seek and You Shall Fold},
+  author    = {Bojan Sellam, Nadav and Bojan, Meital and Schanda, Paul and Bronstein, Alex},
+  booktitle = {Machine Learning in Structural Biology Workshop},
+  year      = {2025}
+}</pre>
+      <nav class="post-nav" aria-label="More posts">
+        <a href="mlff-protein-environments.html"><small>&larr; Previous</small><span>Representing local protein environments with MLFFs</span></a>
+        <a class="next" href="experiment-guided-alphafold.html"><small>Next &rarr;</small><span>Inverse problems with experiment-guided AlphaFold</span></a>
+      </nav>
+    </div>
+  </div>
+</article>
+</main>
+
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/demos/genetic-guidance.js"></script>
+</body>
+</html>

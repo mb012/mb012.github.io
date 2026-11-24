@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Representing Local Protein Environments with MLFFs · Meital Bojan</title>
+  <meta name="description" content="Machine learning force fields trained only on small molecules learn representations that capture protein structure and chemistry. We reuse them frozen to build a physics-grounded, uncertainty-aware chemical shift predictor.">
+  <meta property="og:title" content="Representing local protein environments with machine learning force fields">
+  <meta property="og:description" content="A machine learning force field trained only on small molecules learns the building blocks of protein chemistry.">
+  <meta property="og:image" content="../assets/img/iclr/ring.webp">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono&display=swap">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="../index.html"><span class="brand-name">Meital Bojan</span></a>
+    <nav class="nav" aria-label="Main">
+      <a href="../index.html">About</a>
+      <a href="../publications.html" aria-current="page">Publications</a>
+      <a href="../cv.html">CV</a>
+      <button class="theme-toggle" type="button" aria-label="Toggle dark mode">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+<article>
+  <header class="post-head">
+    <div class="wrap">
+      <a class="back-link" href="../publications.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>All publications</a>
+      <div class="pub-meta"><span class="chip">ICLR 2026</span><span class="chip quiet">GenBio @ ICML 2026</span></div>
+      <h1>Representing local protein environments with machine learning force fields</h1>
+      <p class="post-sub">A machine learning force field trained on small molecules has never seen a protein. It turns out it already understands a lot of protein chemistry anyway.</p>
+      <p class="post-authors"><b>Meital Bojan</b>*, Sanketh Vedula*, Advaith Maddipatla, Nadav Bojan Sellam, Anar Rzayev, Federico Napoli, Paul Schanda, Alex M. Bronstein &middot; ISTA &amp; Technion &middot; <span style="font-size:.85em">*equal contribution</span></p>
+      <div class="post-links">
+        <a class="btn" href="https://arxiv.org/abs/2505.23354" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>arXiv</a>
+        <a class="btn" href="https://www.rowansci.com/blog/local-atomistic-environment" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Rowan blog</a>
+        <a class="btn" href="https://github.com/mb012/MLFF_representation" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg>Code</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="post-body">
+    <div class="tldr">
+      <p class="label">In short</p>
+      <p>
+        Machine learning force fields (MLFFs) are equivariant graph networks pretrained to regress quantum-chemical energies
+        and forces of small molecules. We use their frozen features to describe the local 3D neighborhood of each amino acid in a
+        protein, a domain they never saw. Zero-shot, the embedding space already clusters by structural and chemical properties.
+        With small heads trained on top, the features beat sequence-model embeddings and set the state of the art for predicting
+        nuclear magnetic resonance (NMR) chemical shifts, a measurement that is very sensitive to the local environment.
+      </p>
+      <p class="new"><b>What&rsquo;s new.</b> Force fields become general-purpose representation learners, not just simulators. Their features behave physically where the current best chemical-shift predictor doesn&rsquo;t, and because the feature space is so well structured, density estimation in it gives the first confidence score for chemical-shift prediction.</p>
+    </div>
+
+    <h2>What does an amino acid "see"?</h2>
+    <p>
+      A lot of what a protein does happens locally, in a binding pocket, a catalytic site or a single flipping side chain. To do
+      machine learning on these local environments requires a good way to describe them, one that captures the atoms, the
+      bonds and the subtle chemistry around them. Hand-crafted descriptors (dihedral angles, hydrogen bonds, electrostatics)
+      capture part of it, but they don't generalize well. Sequence models like ESM capture a lot, but they don't
+      really "see" the 3D chemistry.
+    </p>
+    <p>
+      Meanwhile, in computational chemistry, people train neural networks to reproduce quantum-mechanical energies. These
+      MLFFs (MACE, AIMNet, OrbNet, Egret and others) are trained on millions of small molecules with the accuracy of density functional theory (DFT), the standard quantum-chemistry method, so
+      they <em>have</em> to learn how atoms interact. They're used for molecular dynamics, and nobody really treats them as
+      representation learners. We asked what happens if we do.
+    </p>
+
+    <figure class="fig wide">
+      <div class="fig-plate"><img class="zoomable" loading="lazy" decoding="async" src="../assets/img/iclr/pipeline.webp" alt="Pipeline: a local environment around a focus amino acid is passed through a pretrained MLFF, the latent features of the focus amino acid's atoms form a canonical descriptor used by downstream models"></div>
+      <figcaption><b>The recipe.</b> Cut out every amino acid within 5&nbsp;Å of a focus amino acid, pass this small environment through a pretrained MLFF, and keep the features of the focus amino acid's atoms. That gives a canonical descriptor that can be compared across amino acids and proteins, and built on.</figcaption>
+    </figure>
+
+    <p>
+      The construction is simple on purpose. Encoding a whole protein with thousands of atoms would be slow and mostly
+      redundant, since we only care about local information. A 5&nbsp;Å environment is cheap, sensitive to local changes,
+      insensitive to what happens far away, and, because the features are defined per atom, it transfers to proteins the
+      model has never seen. The atomic building blocks are the same even when the sequence and the fold are different.
+    </p>
+
+    <h2>Zero-shot, the space already makes sense</h2>
+    <p>
+      The first thing we did was just <em>look</em> at the features. We took 165K environments from over a thousand
+      non-redundant protein chains, passed them through MACE, a widely used MLFF, and projected its features into 2D, with no
+      training at all.
+    </p>
+
+    <figure class="fig">
+      <div class="fig-plate"><img class="zoomable" loading="lazy" decoding="async" src="../assets/img/iclr/umap.webp" alt="UMAP of MACE features colored by secondary structure, amino acid, backbone dihedral angles and chemical shift"></div>
+      <figcaption><b>One map, four colorings.</b> The same 2D projection of MACE features, colored by secondary structure, amino acid identity, backbone dihedral angles (&phi;, &psi;) and C&alpha; secondary chemical shift. Helices and strands separate cleanly, and so do amino acids. The force field was never told any of this.</figcaption>
+    </figure>
+    <p>
+      With small networks trained on top of the frozen features, we predicted secondary structure, amino acid identity and
+      pK<sub>a</sub> values (how readily a side chain gives up a proton, which depends on its local electrostatics). The MLFF
+      features beat learned embeddings, ESM-based features and classic pK<sub>a</sub> predictors. Which force field was best
+      depended on the task, with MACE and Egret best for structure and AIMNet best for pK<sub>a</sub>.
+    </p>
+
+    <h2>A predictor that respects physics</h2>
+    <p>
+      The task we cared about most was <strong>chemical shifts</strong>, the most widely measured NMR observable and a
+      very sensitive reporter of the local environment. The current state of the art, UCBShift, combines sequence and
+      structure alignment to reference proteins with a random forest. It's accurate, but it depends on having similar
+      references, and it isn't obviously grounded in the local physics (a point that
+      <a href="seek-and-you-shall-fold.html">Seek and You Shall Fold</a> later ran into as well).
+    </p>
+    <p>
+      Our predictor is a small neural network on the frozen MLFF features of the target atom, with a separate model for each atom type. It beats
+      UCBShift on both backbone and side-chain heavy atoms. The one exception is the H&alpha; hydrogen, where it's slightly
+      behind.
+    </p>
+
+    <figure class="fig wide">
+      <div class="fig-plate"><img class="zoomable" loading="lazy" decoding="async" src="../assets/img/iclr/cs-errors.webp" alt="Box plots of chemical shift prediction errors for different atom types for UCBShift X and MACE-based predictors"></div>
+      <figcaption><b>Prediction errors per atom type</b> on 132K test environments with experimental shifts (log scale). The MACE-based predictor (red) has lower error than UCBShift-X (pink) for every heavy atom.</figcaption>
+    </figure>
+
+    <p>
+      Lower error alone does not show that the predictor behaves <em>physically</em>. A clean test is the ring
+      current. When an aromatic ring like phenylalanine's sits in a magnetic field, its delocalized electrons circulate and
+      create their own small field, which shifts the signals of nearby atoms. Rotating the ring about its axis should change
+      those shifts in a very specific way. Before looking at the models, here is what the physics predicts.
+    </p>
+
+    <div class="demo wide" id="ring-demo">
+      <div class="demo-head"><span class="tag">Demo</span><h4>What a rotating ring should do to its neighbors</h4></div>
+      <div class="demo-body">
+        <p class="demo-intro">
+          This is the textbook point-dipole approximation, not our model. The shift at a nearby atom is proportional to
+          (1 &minus; 3cos&sup2;&theta;)/r&sup3;, where r is its distance from the ring and &theta; the angle to the ring's normal.
+          Rotate the ring and watch the four C&alpha; atoms. Two things to notice. Every curve repeats every
+          180°, because flipping a ring over gives the same ring. The effect also fades fast with distance (1/r&sup3;). At
+          3&nbsp;Å it&rsquo;s about a ppm, and at 10&nbsp;Å it&rsquo;s essentially gone.
+        </p>
+        <div class="demo-panels two">
+          <div><canvas id="ring-scene" aria-label="Phenylalanine ring with four nearby alpha carbons"></canvas></div>
+          <div><canvas id="ring-plot" aria-label="Ring-current shift as a function of ring angle for four atoms"></canvas></div>
+        </div>
+        <div class="controls">
+          <div class="grow">
+            <div class="ctl-label"><span>Ring angle χ2</span><output id="ring-chi-out">30°</output></div>
+            <input type="range" id="ring-chi" min="-180" max="180" step="1" value="30" aria-label="Ring angle">
+          </div>
+          <button class="btn" type="button" id="ring-spin" style="padding:6px 14px">▶ Rotate</button>
+        </div>
+        <div class="legend">
+          <span>dot size = size of the shift, colors match the curves</span>
+          <span>+ downfield, &minus; upfield (shielded by the ring)</span>
+          <span><i class="dash" style="color:var(--muted)"></i>7 Å from the ring centre</span>
+        </div>
+      </div>
+    </div>
+
+    <p>
+      So that's what a physically sensible predictor should do. We ran this experiment synthetically on a real protein structure. We took
+      a phenylalanine (residue 50 in PDB 1ZV6), computationally rotated its ring through all angles, and asked both predictors for the shifts
+      of the surrounding atoms.
+    </p>
+
+    <figure class="fig wide">
+      <div class="fig-plate"><img class="zoomable" loading="lazy" decoding="async" src="../assets/img/iclr/ring.webp" alt="Ring rotation experiment: shift variation around the ring for MACE and UCBShift-X, and predicted CA shifts vs ring angle"></div>
+      <figcaption><b>Rotating a ring in a real structure.</b> (A) How much each C&alpha; shift changes as the ring rotates, for our MACE-based predictor (left) and UCBShift-X (right). Ours is confined to roughly a 7&nbsp;Å sphere, while UCBShift-X predicts small effects more than 20&nbsp;Å away. (B, C) Predicted shifts of three nearby C&alpha; atoms vs. ring angle. The MACE predictions are smooth, 180°-periodic and decay with distance, as the physics says they should.</figcaption>
+    </figure>
+
+    <p>
+      Nobody told the model about ring currents. It learned that behavior from small-molecule quantum chemistry, and it carried
+      over to proteins. We even see it inside the representation itself. As the ring rotates, the features of nearby atoms
+      trace a clean closed loop with the same 180° periodicity, and the loop falls apart for atoms far from the ring.
+    </p>
+
+    <figure class="fig">
+      <div class="fig-plate"><img class="zoomable" loading="lazy" decoding="async" src="../assets/img/iclr/ring-pca.webp" alt="PCA of MACE embeddings of CA atoms as the ring rotates: periodic loops for nearby amino acids, no structure for a distant one"></div>
+      <figcaption><b>Inside the embedding.</b> The first principal components of the MACE features of four C&alpha; atoms as the ring rotates. Residues 50 and 51, right next to the ring, trace a smooth periodic loop. Residue 49 starts to break down, and residue 40, far away, shows no relation to the ring at all.</figcaption>
+    </figure>
+
+    <h2>Knowing when not to trust it</h2>
+    <p>
+      Because the feature space is so well organized, we can estimate a density over it, essentially asking "how typical is
+      this environment compared to the ones we've seen?" This turns out to be sensitive. It scores relaxed structures
+      higher than unrelaxed ones, and conditional versions of it separate helices, strands and turns.
+    </p>
+    <p>
+      The practical payoff is <strong>uncertainty</strong>. When an environment has low likelihood, the shift prediction is
+      less accurate. As far as we know, that makes this the first confidence score for chemical shift prediction.
+    </p>
+
+    <figure class="fig wide">
+      <div class="fig-plate"><img class="zoomable" loading="lazy" decoding="async" src="../assets/img/iclr/confidence.webp" alt="Chemical shift prediction error vs log likelihood of the environment for CA and N atoms"></div>
+      <figcaption><b>Likelihood as confidence.</b> Prediction error for C&alpha; (left) and N (right) as a function of the environment's likelihood. Typical environments get more accurate predictions, so the likelihood indicates when to be careful.</figcaption>
+    </figure>
+
+    <div class="note">
+      <span class="label">Limitations</span>
+      <p>
+        We kept the force fields frozen, and fine-tuning them on protein data might give more. Our
+        H&alpha; predictions are still slightly behind UCBShift. We also trained and tested on AlphaFold2-predicted structures
+        (relaxed with a force field), which keeps the data consistent but isn't the same as experimental structures.
+      </p>
+    </div>
+
+    <h2>The takeaway</h2>
+    <p>
+      To predict forces, a model has to capture how atoms interact with their neighbors. Chemical shifts, pK<sub>a</sub> values and ring-current
+      effects are consequences of those same interactions, and the interactions are the same in a small molecule and in a protein.
+    </p>
+    <p>
+      Unlike UCBShift, the resulting predictor is fully differentiable, so it can serve as a likelihood for
+      gradient-based guidance.
+    </p>
+
+    <div class="post-end">
+      <h3 style="font-family:var(--sans);font-size:.95rem;margin:0">Cite</h3>
+      <pre class="cite-box">@inproceedings{bojan2026representing,
+  title     = {Representing Local Protein Environments with Machine Learning Force Fields},
+  author    = {Bojan, Meital and Vedula, Sanketh and Maddipatla, Sai Advaith and Bojan Sellam, Nadav and
+               Rzayev, Anar and Napoli, Federico and Schanda, Paul and Bronstein, Alexander},
+  booktitle = {International Conference on Learning Representations},
+  year      = {2026}
+}</pre>
+      <nav class="post-nav" aria-label="More posts">
+        <a href="symmetry-aware-wave-functions.html"><small>&larr; Previous</small><span>Symmetry-aware residual learning of few-body wave functions</span></a>
+        <a class="next" href="seek-and-you-shall-fold.html"><small>Next &rarr;</small><span>Seek and You Shall Fold</span></a>
+      </nav>
+    </div>
+  </div>
+</article>
+</main>
+
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/demos/ring-current.js"></script>
+</body>
+</html>

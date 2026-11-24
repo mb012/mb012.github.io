@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inverse Problems with Experiment-Guided AlphaFold · Meital Bojan</title>
+  <meta name="description" content="Experiments measure averages over many molecules, so we guide a whole ensemble of AlphaFold3 samples jointly toward the data, treating AlphaFold as a prior and the experiment as a likelihood.">
+  <meta property="og:title" content="Inverse Problems with Experiment-Guided AlphaFold">
+  <meta property="og:description" content="Experiments measure averages, so we guide a whole ensemble at once.">
+  <meta property="og:image" content="../assets/img/icml/4ole-altlocs.webp">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono&display=swap">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="../index.html"><span class="brand-name">Meital Bojan</span></a>
+    <nav class="nav" aria-label="Main">
+      <a href="../index.html">About</a>
+      <a href="../publications.html" aria-current="page">Publications</a>
+      <a href="../cv.html">CV</a>
+      <button class="theme-toggle" type="button" aria-label="Toggle dark mode">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+<article>
+  <header class="post-head">
+    <div class="wrap">
+      <a class="back-link" href="../publications.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>All publications</a>
+      <div class="pub-meta"><span class="chip">ICML 2025</span><span class="chip quiet">GEM @ ICLR 2025 spotlight</span></div>
+      <h1>Inverse problems with experiment-guided AlphaFold</h1>
+      <p class="post-sub">AlphaFold3 often predicts a protein's most common structure, though proteins take on many shapes. We guide it with experimental data to predict the whole ensemble.</p>
+      <p class="post-authors">Advaith Maddipatla*, Nadav Bojan Sellam*, <b>Meital Bojan</b>*, Sanketh Vedula, Paul Schanda, Ailie Marx, Alex M. Bronstein &middot; Technion &amp; ISTA &middot; <span style="font-size:.85em">*equal contribution</span></p>
+      <div class="post-links">
+        <a class="btn" href="https://arxiv.org/abs/2502.09372" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>arXiv</a>
+        <a class="btn" href="experiment-guided-alphafold3.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Follow-up in Nature Biotech</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="post-body">
+    <div class="tldr">
+      <p class="label">In short</p>
+      <p>
+        AlphaFold3 is a diffusion model that predicts a protein's 3D structure from its sequence, and it tends to output a
+        single dominant mode. But proteins move, and experimental measurements are noisy <em>averages</em> over many
+        molecules in many shapes. This makes it an inverse problem, with the frozen AlphaFold3 as
+        the prior and differentiable forward models of the measurements as the likelihood, sampled with guidance. The guided predictions fit the data better than AlphaFold3 alone, sometimes better than the
+        structures experts deposited, in minutes instead of hours.
+</p>
+      <p class="new"><b>What&rsquo;s new.</b> Treating the ensemble, not the single structure, as the unit of inference. Experiments measure averages, so the members are guided jointly. This lets the ensemble split across conformations and capture rare ones. A single structure, or structures guided one by one, cannot do this.</p>
+    </div>
+
+    <h2>One input, a distribution of outputs</h2>
+    <p>
+      AlphaFold3 is used as a point predictor, with one sequence in and one structure out. But the right output is a
+      <em>distribution</em>. Parts of a protein switch between shapes, and these motions often define its function.
+    </p>
+    <p>
+      Experiments do see this distribution, but only through averages. An X-ray density map averages over trillions of
+      copies in a crystal, and nuclear magnetic resonance (NMR) measurements average over molecules and over time. AlphaFold was trained mostly on single
+      structures fitted to that data, so it learned to predict the mode. It is very good at the mode, and that is exactly why
+      it misses the rest of the distribution.
+    </p>
+
+    <figure class="fig wide">
+      <div class="fig-plate"><img class="zoomable" loading="lazy" decoding="async" src="../assets/img/icml/orf8.webp" alt="Two crystal structures of SARS-CoV-2 ORF8 differing at three loops, and the AlphaFold3 and guided predictions"></div>
+      <figcaption><b>Same sequence (almost), different shapes.</b> Two crystal structures of the SARS-CoV-2 ORF8 protein that differ by a single mutation but have three loops in clearly different places. AlphaFold3 predicts practically the same structure for both, getting one loop right for one crystal and another loop right for the other. Guided by each crystal's electron density, it fits both.</figcaption>
+    </figure>
+
+    <h2>AlphaFold as a prior, the experiment as a likelihood</h2>
+    <p>
+      The framing is the classic one from inverse problems. We want structures <span class="math">X</span> that are plausible for
+      this sequence <em>and</em> explain the measurement <span class="math">y</span>:
+    </p>
+    <p class="pullquote" style="font-style:normal;font-family:var(--serif)">
+      p(ensemble | data) &nbsp;&prop;&nbsp; p(data | ensemble) &nbsp;&times;&nbsp; p(ensemble | sequence)
+    </p>
+    <p>
+      AlphaFold3 is a diffusion model, so it gives us the prior term for free, in the form of a score we can follow. For the
+      likelihood we wrote differentiable "forward models", little simulators of what each experiment would see for a given
+      structure. For crystallography that is an electron density map, and for NMR it is nuclear Overhauser effect
+      (NOE) restraints, which say that two hydrogen atoms are close on average. During sampling, the gradient of the likelihood is added to AlphaFold's own update, nudging the
+      structures toward the data at every denoising step.
+    </p>
+
+    <figure class="fig wide">
+      <div class="fig-plate"><img class="zoomable" loading="lazy" decoding="async" src="../assets/img/icml/method.webp" alt="Schematic of guided AlphaFold3: the diffusion model produces an ensemble, ensemble statistics are compared with experimental inputs, and the gradient is fed back as guidance, followed by relaxation and pruning"></div>
+      <figcaption><b>The pipeline.</b> At each diffusion step AlphaFold3 produces an ensemble. We compute what the experiment would see for it (densities, average distances, positions of known atoms), and feed the gradient of the log-likelihood back in. At the end, the ensemble is relaxed with a force field and pruned to a small set that explains the data.</figcaption>
+    </figure>
+
+    <h2>Guide the ensemble, not each structure</h2>
+    <p>
+      This is the main idea of the paper. The prior is separable, since every structure in the ensemble is
+      its own AlphaFold sample. The likelihood is <strong>not</strong> separable, because the experiment only sees the
+      <em>average</em>. So guiding each of a hundred structures to fit the data on its own does not work.
+    </p>
+    <p>
+      With that approach (we call it i.i.d. guidance), every structure is trying to explain the <em>whole</em> measurement by
+      itself. When the data comes from a mix of two conformations, no single structure can do that, so they all compromise in
+      the same way. If instead the ensemble is guided jointly, each member feels how the <em>group</em> is doing. If conformation B is
+      already over-represented, the gradient pushes some members toward A. This is much easier to see than to read.
+    </p>
+
+    <div class="demo wide" id="ensemble-demo">
+      <div class="demo-head"><span class="tag">Demo</span><h4>Fitting a two-state measurement with an ensemble</h4></div>
+      <div class="demo-body">
+        <p class="demo-intro">
+          A 1D cartoon, not the real model. The prior is a two-bump mixture, the "density" of each member is a Gaussian blob,
+          and sampling is annealed Langevin dynamics with guidance. The same guidance strength is used in both guided modes.
+          The only difference is whether the likelihood is computed per member or on the average.
+        </p>
+        <p class="demo-intro">
+          A loop can sit in conformation A or B, and the crystal has both, so the measured density (green) has two bumps.
+          The prior strongly prefers B (dotted line). Each dot is one ensemble member, and the orange line is the density the
+          ensemble produces. Switch modes and watch the sampler run.
+        </p>
+        <div class="controls" style="margin-top:0;margin-bottom:14px">
+          <div class="seg" role="group" aria-label="Guidance mode">
+            <button type="button" data-mode="none" aria-pressed="false">No guidance</button>
+            <button type="button" data-mode="iid" aria-pressed="false">Each on its own (i.i.d.)</button>
+            <button type="button" data-mode="joint" aria-pressed="true">Jointly (non-i.i.d.)</button>
+          </div>
+          <button class="btn" type="button" id="ens-run" style="padding:6px 14px">↻ Resample</button>
+        </div>
+        <canvas aria-label="Observed bimodal density, ensemble members and the density they produce"></canvas>
+        <div class="controls">
+          <div class="grow">
+            <div class="ctl-label"><span>Ensemble size</span><output id="ens-n-out">8</output></div>
+            <input type="range" id="ens-n" min="2" max="16" step="1" value="8" aria-label="Ensemble size">
+          </div>
+        </div>
+        <div class="readouts">
+          <div class="readout good"><small>Fit to measured density (cosine similarity)</small><b id="ens-cos">–</b></div>
+          <div class="readout"><small>Members in A · in between · in B</small><b id="ens-a">–</b></div>
+        </div>
+        <div class="legend">
+          <span><i style="background:var(--olive);opacity:.5"></i>measured density</span>
+          <span><i class="line" style="background:var(--ochre)"></i>density of the ensemble</span>
+          <span><i class="dash" style="color:var(--muted)"></i>prior (AlphaFold's preference)</span>
+          <span><i style="background:var(--olive-deep);opacity:.6"></i>ensemble members</span>
+        </div>
+      </div>
+    </div>
+
+    <p>
+      Without guidance, nearly everyone sits in B, because that's what the prior believes. With i.i.d. guidance, each member tries to cover both bumps on its own. The best a single blob
+      can do is sit between them, in a conformation that isn't actually there. Pulled there by the guidance and toward B by the prior,
+      most members stay in B, and at most a few end up in the middle. Joint guidance is the only one that splits the ensemble and
+      reproduces both bumps.
+    </p>
+
+    <h2>What it finds in real crystals</h2>
+    <p>
+      This isn't only a toy effect. The Protein Data Bank (PDB) is full of "altlocs", regions where crystallographers modeled two
+      alternative conformations because the density clearly showed both. Many visualization tools just show the first one by
+      default. In the human NBR1 protein (PDB 4OLE), a segment of nine amino acids is either a helix or a strand. AlphaFold3
+      predicts only one of them. Density-guided AlphaFold3 recovers both.
+    </p>
+
+    <figure class="fig wide">
+      <div class="fig-plate"><img class="zoomable" loading="lazy" decoding="async" src="../assets/img/icml/4ole-altlocs.webp" alt="4OLE: PDB with two conformations, AlphaFold3 predicting only one, and the guided ensemble covering both and fitting the density"></div>
+      <figcaption><b>Recovering a hidden conformation.</b> Left: the deposited structure has two conformations (green A, purple B). Middle: AlphaFold3 predicts only B and completely misses the helical A. Right: the guided ensemble covers both and explains the observed density (blue surface) much better.</figcaption>
+    </figure>
+
+    <p>
+      Across a benchmark of altloc cases, the guided ensembles consistently fit the density better than unguided AlphaFold3,
+      and they were consistently bimodal where unguided AlphaFold3 typically gave a single mode. On 15 more proteins, with
+      regions of up to 22 amino acids optimized, the guided structures matched or beat the deposited PDB models on
+      density agreement in every case.
+    </p>
+
+    <h2>NMR, from hours to minutes</h2>
+    <p>
+      NMR is where the ensemble view really matters. An NOE indicates that two hydrogens are close <em>on average</em>.
+      The standard workflow fits structures with restrained molecular dynamics (MD), and fitting conformers one at a time tends to
+      give rigid ensembles that don't reflect the real motion. Doing it properly with ensemble MD takes days even for small
+      proteins.
+    </p>
+
+    <p>
+      The strongest test is <strong>ubiquitin</strong>, the classic benchmark for protein dynamics. There's an independent
+      experiment, spin relaxation, that measures how much each backbone N&ndash;H bond wiggles (the order parameter
+      S&sup2;). This data is not used for guidance, which makes it a fair check of whether the ensemble moves like the real protein.
+    </p>
+
+    <figure class="fig wide">
+      <div class="fig-plate"><img class="zoomable" loading="lazy" decoding="async" src="../assets/img/icml/ubiquitin-s2.webp" alt="Ubiquitin N-H order parameters from experiment, AlphaFold3, i.i.d. and non-i.i.d. guided ensembles"></div>
+      <figcaption><b>Does the ensemble move like the real thing?</b> Order parameters along ubiquitin's sequence. AlphaFold3 (red) is too rigid almost everywhere, with correlation r = 0.47 to experiment. i.i.d. NOE guidance gets r = 0.52, and joint (non-i.i.d.) guidance gets <b>r = 0.72</b>, more flexible in the flexible turn and still rigid in the helix.</figcaption>
+    </figure>
+
+    <p>
+      Guidance takes a few minutes per protein instead of many hours. In the follow-up we ran it on
+      <a href="experiment-guided-alphafold3.html">91 NMR systems</a>, where the guided ensembles satisfied the restraints
+      better than the deposited NMR structures in 77% of cases.
+    </p>
+
+    <div class="note">
+      <span class="label">Limitations</span>
+      <p>
+        Guidance is a strong pull, and with large ensembles the structures start overfitting to the noise in the data,
+        giving broken bonds and atoms that run into each other. That's why the pipeline ends with a force-field relaxation and a
+        pruning step. It works well, but it's a patch, not a principled fix.
+      </p>
+      <p>
+        Most importantly, an ensemble that explains the data isn't necessarily <em>the</em> ensemble. Different sets of
+        structures can explain the same averages equally well. These are hypotheses consistent with the measurements, not
+        thermodynamic populations.
+      </p>
+    </div>
+
+    <div class="post-end">
+      <h3 style="font-family:var(--sans);font-size:.95rem;margin:0">Cite</h3>
+      <pre class="cite-box">@inproceedings{maddipatla2025inverse,
+  title     = {Inverse Problems with Experiment-Guided AlphaFold},
+  author    = {Maddipatla, Sai Advaith and Bojan Sellam, Nadav and Bojan, Meital and
+               Vedula, Sanketh and Schanda, Paul and Marx, Ailie and Bronstein, Alexander},
+  booktitle = {Proceedings of the 42nd International Conference on Machine Learning},
+  series    = {PMLR}, volume = {267}, pages = {42366--42393},
+  year      = {2025}
+}</pre>
+      <nav class="post-nav" aria-label="More posts">
+        <a href="seek-and-you-shall-fold.html"><small>&larr; Previous</small><span>Seek and You Shall Fold</span></a>
+        <a class="next" href="correcting-flows.html"><small>Next &rarr;</small><span>Correcting flows with marginal matching</span></a>
+      </nav>
+    </div>
+  </div>
+</article>
+</main>
+
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/demos/ensemble-guidance.js"></script>
+</body>
+</html>

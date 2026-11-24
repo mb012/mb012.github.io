@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Experiment-guided AlphaFold3 · Meital Bojan</title>
+  <meta name="description" content="AlphaFold3 can be guided by NMR, X-ray crystallography and cryo-EM data, separately or together, to generate compact ensembles whose averages agree with experiment, often better than the structures deposited in the PDB.">
+  <meta property="og:title" content="Experiment-guided AlphaFold3 resolves measurement-consistent protein ensembles">
+  <meta property="og:description" content="AlphaFold3, steered by NMR, X-ray and cryo-EM data, toward ensembles that explain the experiment.">
+  <meta property="og:image" content="../assets/img/nature/fig4.webp">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono&display=swap">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="../index.html"><span class="brand-name">Meital Bojan</span></a>
+    <nav class="nav" aria-label="Main">
+      <a href="../index.html">About</a>
+      <a href="../publications.html" aria-current="page">Publications</a>
+      <a href="../cv.html">CV</a>
+      <button class="theme-toggle" type="button" aria-label="Toggle dark mode">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+<article>
+  <header class="post-head">
+    <div class="wrap">
+      <a class="back-link" href="../publications.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>All publications</a>
+      <div class="pub-meta"><span class="chip">Nature Biotechnology</span><span class="chip quiet">2026</span></div>
+      <h1>Experiment-guided AlphaFold3 resolves measurement-consistent protein ensembles</h1>
+      <p class="post-sub">AlphaFold3 guided by nuclear magnetic resonance (NMR), X-ray and cryo-electron microscopy (cryo-EM) data, alone or combined, produces small ensembles that often explain the measurements better than the deposited structures.</p>
+      <p class="post-authors">Advaith Maddipatla, Nadav Bojan Sellam, <b>Meital Bojan</b>, Volodymyr Masalitin, Sanketh Vedula, Paul Schanda, Ailie Marx, Alex M. Bronstein</p>
+      <div class="post-links">
+        <a class="btn" href="https://www.nature.com/articles/s41587-026-03166-5" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>Paper (open access)</a>
+        <a class="btn" href="experiment-guided-alphafold.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>The ICML version, with a demo</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="post-body">
+    <div class="tldr">
+      <p class="label">In short</p>
+      <p>
+        AlphaFold3 is a strong generative prior over protein structures, but it collapses to one dominant mode and knows
+        nothing about the conditions of a specific experiment. We keep it frozen and do posterior sampling with likelihoods
+        from three very different measurement types (NMR, X-ray crystallography and cryo-EM), alone or composed together.
+        Each data source is one differentiable likelihood term, so adding a modality needs no retraining. The output is a
+        small ensemble whose <em>averaged</em> predictions match the data.
+</p>
+      <p class="new"><b>What&rsquo;s new.</b> One plug-and-play inverse solver for three measurement types and their combinations, likelihoods on how much the structure <em>fluctuates</em> and not only on its average, and benchmarks on 91 NMR systems, where guided ensembles beat the expert-deposited NMR ensembles in 70 cases (77%).</p>
+    </div>
+
+    <p>
+      This paper grew out of the <a href="experiment-guided-alphafold.html">ICML work</a>, whose post covers the core idea
+      in detail and has an interactive demo of why the ensemble has to be guided <em>jointly</em>. In short, AlphaFold3 is
+      a prior over structures, each experiment is a likelihood, and the ensemble is sampled from the posterior. What this paper adds is scale and breadth. There are more modalities, more kinds of data, observables that
+      report directly on motion, large benchmarks, and reweighting with an energy model.
+    </p>
+
+    <figure class="fig wide">
+      <div class="fig-plate"><img class="zoomable" loading="lazy" decoding="async" src="../assets/img/nature/fig1.webp" alt="Method schematic: AlphaFold3 diffusion produces an ensemble; hydrogens are added; likelihoods of substructure, electron density or ESP maps, NOE distances and order parameters are combined and their gradient guides sampling; then force-field relaxation and ensemble pruning"></div>
+      <figcaption><b>One framework, many experiments.</b> At each diffusion step AlphaFold3 produces an ensemble. Hydrogens are added differentiably, and we compute likelihoods for whatever data we have, such as densities from X-ray or cryo-EM, nuclear Overhauser effect (NOE) distances, order parameters and known atom positions. Their combined gradient steers sampling. Relaxation and pruning give a compact final ensemble. <span style="opacity:.8">Figure from the paper, CC BY 4.0.</span></figcaption>
+    </figure>
+
+    <h2>Guiding NMR on fluctuations, not just averages</h2>
+    <p>
+      In the ICML paper we guided with nuclear Overhauser effect (NOE) distances, NMR signals that tell which atoms are close on average, and then <em>checked</em> the motion against spin-relaxation
+      order parameters (S&sup2;, how much each backbone bond wiggles). Here we went one step further and guided on the
+      order parameters themselves. For ubiquitin, a small and well-studied protein, adding an S&sup2; term gives much better agreement with the measured
+      dynamics, similar to expensive physics simulations constrained by the NMR data, at a small fraction of the cost, and with
+      little or no cost in distance-restraint violations.
+    </p>
+
+    <figure class="fig wide">
+      <div class="fig-plate"><img class="zoomable" loading="lazy" decoding="async" src="../assets/img/nature/fig2.webp" alt="Ubiquitin: cumulative distribution of constraint violations, unguided vs guided ensembles, visualized violations, and order parameters along the sequence"></div>
+      <figcaption><b>Ubiquitin.</b> (a) NOE-guided ensembles (green) violate fewer restraints than both the deposited ensemble 1D3Z and AlphaFold3. (b) The guided ensemble is more heterogeneous. (c) Violations drawn on the structure. (d) Order parameters along the sequence: adding an S&sup2; term to the guidance brings the ensemble's motion close to experiment. <span style="opacity:.8">Figure from the paper, CC BY 4.0.</span></figcaption>
+    </figure>
+
+    <p>
+      Then the benchmark. On eight peptides (short protein chains) known to be mispredicted by AlphaFold3 plus 83 proteins from a database of
+      100 NMR datasets, NOE-guided AlphaFold3 improved restraint satisfaction over the deposited PDB ensemble in
+      <strong>70 of 91 cases (about 77%)</strong>. Unguided AlphaFold3 beat the PDB in only 15. The guided version beat the
+      unguided one in every case. An independent check based on chemical shifts, another NMR measurement that reflects each atom's local environment (ANSURR, which compares how rigid a model is with how rigid the shifts say it should be), improved in 92% of cases on one of its two scores.
+    </p>
+
+    <figure class="fig wide">
+      <div class="fig-plate"><img class="zoomable" loading="lazy" decoding="async" src="../assets/img/nature/fig4.webp" alt="Ensembles from unguided AlphaFold3 (red) and NOE-guided (green) for six proteins overlaid on NMR structures"></div>
+      <figcaption><b>Six NMR proteins.</b> Unguided AlphaFold3 in red, NOE-guided in green, the deposited NMR ensemble in white. AlphaFold3 tends to predict too much order (for example, helices that are too long in 2B3W, 2JVD and 6SOW). Guidance adds the missing heterogeneity. In 2K52 no single structure satisfies the restraints, but the ensemble does. <span style="opacity:.8">Figure from the paper, CC BY 4.0.</span></figcaption>
+    </figure>
+
+    <h2>What the crystal knew and the model didn't</h2>
+    <p>
+      AlphaFold3 is oblivious to its surroundings, such as bound small molecules (ligands), ions, partner proteins and the neighbouring copies packed around it in a crystal. These can all change
+      a protein's local shape. Electron density guidance brings that information back in, as a few examples show.
+    </p>
+    <ul>
+      <li><strong>A ligand changes a loop.</strong> In a crystal of the protein HSP90&alpha;, two copies sit side by side and only one holds a ligand. The loop next to it differs between the two copies. AlphaFold3 gets neither right, and guidance restores both.</li>
+      <li><strong>Filling in the blanks.</strong> Where a region is too flexible, the density smears out and crystallographers often leave it unmodeled. Guidance can propose structures that best explain the faint density that is there.</li>
+      <li><strong>Peptides.</strong> Short chains adapt to whatever they bind, so AlphaFold3 often predicts them poorly. Guided by density, even without the evolutionary information (a multiple sequence alignment) AlphaFold3 usually relies on, it recovers the bound structure.</li>
+      <li><strong>Hidden conformations.</strong> Guided ensembles recover alternate conformations ("altlocs") that differ by anything from 1&nbsp;Å to tens of ångströms, and in one case suggest an altloc that was never modeled in the deposited structure.</li>
+    </ul>
+
+    <figure class="fig wide">
+      <div class="fig-plate"><img class="zoomable" loading="lazy" decoding="async" src="../assets/img/nature/fig5.webp" alt="Electron density guided examples: HSP90 loop, unmodeled region, peptide bound to SH3, full chain refinement, and altloc ensembles"></div>
+      <figcaption><b>Electron-density guidance.</b> Numbers under each structure are cosine similarities between the calculated and observed density. Guided AlphaFold3 (green) matches or beats the PDB model in most panels, and in (g) it predicts an altloc that wasn't modeled. <span style="opacity:.8">Figure from the paper, CC BY 4.0.</span></figcaption>
+    </figure>
+
+    <h2>Cryo-EM, and composing likelihoods</h2>
+    <p>
+      Cryo-EM maps are usually lower resolution, which makes them a good match for a strong prior. The insulin receptor
+      shows a nice failure mode. It is made of two identical chains, and AlphaFold3 tends to predict such pairs as too symmetric. It gets the asymmetric state the receptor takes when insulin binds badly wrong. Guided by the map, it fits both the symmetric and asymmetric states. For an amyloid-&beta; fibril, a stacked protein aggregate linked to Alzheimer's disease,
+      AlphaFold3 completely mispredicts how the two chains pack, and guidance fixes it.
+    </p>
+    <p>
+      The most useful property is <strong>composition</strong>. Each data source is a separate likelihood term, so combining
+      techniques means adding terms, with no retraining. For another fibril, formed by the protein RIPK3,
+      guiding with the cryo-EM map alone improves the density fit but leaves the local geometry of the chain off. Adding the chain's torsion angles, estimated from NMR data, fixes the local structure, at a small cost in density
+      fit.
+    </p>
+
+    <figure class="fig wide">
+      <div class="fig-plate"><img class="zoomable" loading="lazy" decoding="async" src="../assets/img/nature/fig6.webp" alt="Cryo-EM guided reconstructions: insulin receptor symmetric and asymmetric states, amyloid-beta fibril, and RIPK3 fibril with combined ESP and NMR guidance"></div>
+      <figcaption><b>Cryo-EM.</b> (a) Insulin receptor, symmetric and asymmetric. (b) An amyloid-&beta; fibril. (c) A RIPK3 fibril guided by the cryo-EM map alone (green) and by the map plus NMR-derived torsion angles (cyan). AlphaFold3 is in red. <span style="opacity:.8">Figure from the paper, CC BY 4.0.</span></figcaption>
+    </figure>
+
+    <h2>Reweighting with an energy model</h2>
+    <p>
+      All of the above uses equally weighted ensembles. We also tried weighting conformations by an energy model (a learned energy function derived from Boltz-2, another structure prediction model), either after sampling or inside the guidance itself. Including the energy in
+      the guidance improved restraint satisfaction in about 87% of cases, with a median improvement of around 20%. Energy
+      carries information the measurements don't.
+    </p>
+
+    <figure class="fig wide">
+      <div class="fig-plate"><img class="zoomable" loading="lazy" decoding="async" src="../assets/img/nature/fig3.webp" alt="Summary statistics: violated constraints and median violations for PDB, AlphaFold3 and NOE-guided; cosine similarity and R-factors for X-ray"></div>
+      <figcaption><b>The benchmarks at a glance.</b> (a) NMR: fraction of violated restraints and median violation for PDB, AlphaFold3 and NOE-guided ensembles, and their improvement relative to the PDB. (b) X-ray: density similarity and R-factors, the standard crystallography fit scores. <span style="opacity:.8">Figure from the paper, CC BY 4.0.</span></figcaption>
+    </figure>
+
+    <div class="note">
+      <span class="label">Limitations</span>
+      <p>
+        These ensembles are hypotheses consistent with the data, not thermodynamic populations. Guidance strength also needs care, especially with low-resolution or noisy maps, where it's easy to pull the model into the noise. Finally, the method is still mostly about proteins, and small molecules, metals, water and chemical modifications are only partly handled.
+      </p>
+    </div>
+
+    <div class="post-end">
+      <h3 style="font-family:var(--sans);font-size:.95rem;margin:0">Cite</h3>
+      <pre class="cite-box">@article{maddipatla2026experiment,
+  title   = {Experiment-guided AlphaFold3 resolves measurement-consistent protein ensembles},
+  author  = {Maddipatla, Advaith and Bojan Sellam, Nadav and Bojan, Meital and Masalitin, Volodymyr and
+             Vedula, Sanketh and Schanda, Paul and Marx, Ailie and Bronstein, Alex M.},
+  journal = {Nature Biotechnology},
+  pages   = {1--9},
+  year    = {2026},
+  doi     = {10.1038/s41587-026-03166-5}
+}</pre>
+      <nav class="post-nav" aria-label="More posts">
+        <a href="../publications.html"><small>&larr; Back</small><span>All publications</span></a>
+        <a class="next" href="symmetry-aware-wave-functions.html"><small>Next &rarr;</small><span>Symmetry-aware residual learning of few-body wave functions</span></a>
+      </nav>
+    </div>
+  </div>
+</article>
+</main>
+
+<script src="../assets/js/site.js"></script>
+</body>
+</html>
