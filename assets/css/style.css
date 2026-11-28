@@ -265,6 +265,12 @@ main { padding-bottom: 140px; }
   margin: 0 0 20px;
 }
 .hero h1 em { font-style: italic; color: var(--olive); font-weight: 400; }
+.hero h1:has(+ .hero-role) { margin-bottom: 10px; }
+.hero-role {
+  font-family: var(--sans); font-size: .9rem; font-weight: 600;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--olive);
+  margin: 0 0 20px;
+}
 .hero-lede {
   font-family: var(--serif); font-size: 1.28rem; line-height: 1.55; color: var(--ink-soft);
   margin: 0 0 28px; max-width: 36em;
